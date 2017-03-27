@@ -441,7 +441,9 @@ class CinderBlockDeviceAPI(object):
             # Only do subset comparison if there were *some* IP addresses;
             # non-ACTIVE servers will have an empty list of IP addresses and
             # lead to incorrect matches.
-            if api_addresses and api_addresses.issubset(local_ips):
+
+            # the VM colud see the openstack float ip which should be in api_addresses
+            if api_addresses and list(api_addresses & local_ips):
                 matching_instances.append(server.id)
             else:
                 for ip in api_addresses:
@@ -449,7 +451,7 @@ class CinderBlockDeviceAPI(object):
 
         # If we've got this correct there should only be one matching instance.
         # But we don't currently test this directly. See FLOC-2281.
-        if len(matching_instances) == 1:
+        if len(matching_instances) == 1 and matching_instances[0]:
             return matching_instances[0]
         # If there was no match, or if multiple matches were found, log an
         # error containing all the local and remote IPs.
